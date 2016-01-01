@@ -14,6 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,7 +41,7 @@ public class AymoonUtils {
         return text.toString();
     }
 
-     public String readfile(String path) {
+    public String readfile(String path) {
         String output = "";
         try {
             File fileDir = new File(path);
@@ -63,5 +64,18 @@ public class AymoonUtils {
             allMatches.add(m.group(gid));
         }
         return allMatches;
+    }
+
+    public Vector<String> removeDuplicates(Vector<String> list, boolean removeEmpty) {
+        Vector<String> refined = new Vector<String>();
+        for (int i = 0; i < list.size(); i++) {
+            String element = list.elementAt(i);
+            if (!refined.contains(element)) {
+                if (!(removeEmpty && element.trim().isEmpty())) {
+                    refined.add(element);
+                }
+            }
+        }
+        return refined;
     }
 }
