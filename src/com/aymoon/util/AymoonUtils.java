@@ -6,13 +6,19 @@
 package com.aymoon.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
@@ -40,7 +46,37 @@ public class AymoonUtils {
         } while (line != null);
         return text.toString();
     }
+    
+    public String sendRequest(String endPoint , String method, ArrayList<HashMap<String,String>> headers , String body) throws Exception {
+        URL url = new URL(endPoint);
+        StringBuffer text = new StringBuffer();
+        
+        
+        URLConnection con = url.openConnection();
+        con.setDoOutput(true);
+        con.setRequestProperty("Cookie", "name=value");
+        con.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
+        con.connect();
+        
+        
+        
+        OutputStreamWriter out = new OutputStreamWriter(con.getOutputStream(), "UTF-8");
+        out.write(body);
+        out.close();
 
+
+        InputStreamReader in = new InputStreamReader((InputStream) con.getContent());
+        BufferedReader buff = new BufferedReader(in);
+        String line;
+        do {
+            line = buff.readLine();
+            if (line != null) {
+                text.append(line + "\n");
+            }
+        } while (line != null);
+        return text.toString();
+    }
+    
     public String readfile(String path) {
         String output = "";
         try {
@@ -54,6 +90,15 @@ public class AymoonUtils {
         } catch (Exception ex) {
         }
         return output;
+    }
+    
+    public void writeFile(String filePath, String content) {
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(filePath), "utf-8"))) {
+            writer.write(content);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     public List<String> getall(String mystring, String pat, int gid) {
