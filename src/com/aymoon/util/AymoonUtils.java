@@ -109,7 +109,7 @@ public class AymoonUtils {
     }
 
     public List<String> getall(String mystring, String pat, int gid) {
-        List<String> allMatches = new ArrayList<String>();
+        List<String> allMatches = new ArrayList<>();
         Matcher m = Pattern.compile(pat,Pattern.DOTALL)
                 .matcher(mystring);
         while (m.find()) {
@@ -118,10 +118,10 @@ public class AymoonUtils {
         return allMatches;
     }
 
-    public Vector<String> removeDuplicates(Vector<String> list, boolean removeEmpty) {
-        Vector<String> refined = new Vector<String>();
+    public ArrayList<String> removeDuplicates(ArrayList<String> list, boolean removeEmpty) {
+        ArrayList<String> refined = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            String element = list.elementAt(i);
+            String element = list.get(i);
             if (!refined.contains(element)) {
                 if (!(removeEmpty && element.trim().isEmpty())) {
                     refined.add(element);
