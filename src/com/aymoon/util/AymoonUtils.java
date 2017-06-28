@@ -232,4 +232,13 @@ public class AymoonUtils {
         return response.toString();
 
     }
+    public void printAllFromFile(String filePath ,String pattern , int groupNumber)
+    {
+        String content = readfile(filePath);
+        List<String> foundList = getall(content, pattern, groupNumber);
+        for (int i = 0; i < foundList.size(); i++) {
+            String value = foundList.get(i);
+            System.out.println(value);
+        }
+    }
 }
