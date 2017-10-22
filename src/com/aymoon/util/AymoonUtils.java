@@ -11,6 +11,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.net.ssl.HttpsURLConnection;
@@ -110,7 +110,7 @@ public class AymoonUtils {
 
     public List<String> getall(String mystring, String pat, int gid) {
         List<String> allMatches = new ArrayList<>();
-        Matcher m = Pattern.compile(pat,Pattern.DOTALL)
+        Matcher m = Pattern.compile(pat, Pattern.DOTALL)
                 .matcher(mystring);
         while (m.find()) {
             allMatches.add(m.group(gid));
@@ -232,8 +232,8 @@ public class AymoonUtils {
         return response.toString();
 
     }
-    public void printAllFromFile(String filePath ,String pattern , int groupNumber)
-    {
+
+    public void printAllFromFile(String filePath, String pattern, int groupNumber) {
         String content = readfile(filePath);
         List<String> foundList = getall(content, pattern, groupNumber);
         for (int i = 0; i < foundList.size(); i++) {
@@ -241,4 +241,68 @@ public class AymoonUtils {
             System.out.println(value);
         }
     }
+
+    public static void writeToFile(String path, String data , boolean append) {
+        BufferedWriter bw = null;
+        FileWriter fw = null;
+
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            fw = new FileWriter(file.getAbsoluteFile(), append);
+            bw = new BufferedWriter(fw);
+            bw.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bw != null) {
+                    bw.close();
+                }
+
+                if (fw != null) {
+                    fw.close();
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public static String mergeString(List<String> keywords, String separator) {
+        String[] list = (String[]) keywords.toArray();
+        String joined = String.join(",", list);
+        return joined;
+    }
+    void downloadFromUrl(URL url, String localFilename) throws IOException {
+    InputStream is = null;
+    FileOutputStream fos = null;
+
+    try {
+        URLConnection urlConn = url.openConnection();//connect
+
+        is = urlConn.getInputStream();               //get connection inputstream
+        fos = new FileOutputStream(localFilename);   //open outputstream to local file
+
+        byte[] buffer = new byte[4096];              //declare 4KB buffer
+        int len;
+
+        //while we have availble data, continue downloading and storing to local file
+        while ((len = is.read(buffer)) > 0) {  
+            fos.write(buffer, 0, len);
+        }
+    } finally {
+        try {
+            if (is != null) {
+                is.close();
+            }
+        } finally {
+            if (fos != null) {
+                fos.close();
+            }
+        }
+    }
+}
 }
