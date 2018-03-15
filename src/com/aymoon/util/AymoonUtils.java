@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.aymoon.util;
+package org.homains.utils.hackforme;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -26,9 +26,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.net.ssl.HttpsURLConnection;
@@ -41,10 +44,13 @@ public class AymoonUtils {
 
     private final String USER_AGENT = "Mozilla/5.0";
 
-    public String getData(String address) throws Exception {
+    public String getData(String address, int timeout) throws Exception {
         URL page = new URL(address);
         StringBuffer text = new StringBuffer();
         HttpURLConnection conn = (HttpURLConnection) page.openConnection();
+        if (timeout > 0) {
+            conn.setConnectTimeout(timeout);
+        }
         conn.connect();
         InputStreamReader in = new InputStreamReader((InputStream) conn.getContent());
         BufferedReader buff = new BufferedReader(in);
@@ -156,7 +162,7 @@ public class AymoonUtils {
         return new BigInteger(130, random).toString(length);
     }
 
-    private String sendGet(String url, HashMap<String, String> headers) throws Exception {
+    public String sendGet(String url, HashMap<String, String> headers) throws Exception {
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
@@ -164,11 +170,12 @@ public class AymoonUtils {
 
         //add request header
         con.setRequestProperty("User-Agent", USER_AGENT);
-
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            con.setRequestProperty(key, value);
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                con.setRequestProperty(key, value);
+            }
         }
 
         int responseCode = con.getResponseCode();
@@ -191,7 +198,7 @@ public class AymoonUtils {
     }
 
     // HTTP POST request
-    private String sendPost(String url, HashMap<String, String> headers, String urlParameters) throws Exception {
+    public String sendPost(String url, HashMap<String, String> headers, String urlParameters) throws Exception {
 
         URL obj = new URL(url);
         HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
@@ -214,9 +221,9 @@ public class AymoonUtils {
         wr.close();
 
         int responseCode = con.getResponseCode();
-        System.err.println("\nSending 'POST' request to URL : " + url);
-        System.err.println("Post parameters : " + urlParameters);
-        System.err.println("Response Code : " + responseCode);
+//        System.err.println("\nSending 'POST' request to URL : " + url);
+//        System.err.println("Post parameters : " + urlParameters);
+//        System.err.println("Response Code : " + responseCode);
 
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
@@ -242,7 +249,7 @@ public class AymoonUtils {
         }
     }
 
-    public static void writeToFile(String path, String data , boolean append) {
+    public static void writeToFile(String path, String data, boolean append) {
         BufferedWriter bw = null;
         FileWriter fw = null;
 
@@ -276,33 +283,123 @@ public class AymoonUtils {
         String joined = String.join(",", list);
         return joined;
     }
+
     void downloadFromUrl(URL url, String localFilename) throws IOException {
-    InputStream is = null;
-    FileOutputStream fos = null;
+        InputStream is = null;
+        FileOutputStream fos = null;
 
-    try {
-        URLConnection urlConn = url.openConnection();//connect
-
-        is = urlConn.getInputStream();               //get connection inputstream
-        fos = new FileOutputStream(localFilename);   //open outputstream to local file
-
-        byte[] buffer = new byte[4096];              //declare 4KB buffer
-        int len;
-
-        //while we have availble data, continue downloading and storing to local file
-        while ((len = is.read(buffer)) > 0) {  
-            fos.write(buffer, 0, len);
-        }
-    } finally {
         try {
-            if (is != null) {
-                is.close();
+            URLConnection urlConn = url.openConnection();//connect
+
+            is = urlConn.getInputStream();               //get connection inputstream
+            fos = new FileOutputStream(localFilename);   //open outputstream to local file
+
+            byte[] buffer = new byte[4096];              //declare 4KB buffer
+            int len;
+
+            //while we have availble data, continue downloading and storing to local file
+            while ((len = is.read(buffer)) > 0) {
+                fos.write(buffer, 0, len);
             }
         } finally {
-            if (fos != null) {
-                fos.close();
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } finally {
+                if (fos != null) {
+                    fos.close();
+                }
             }
         }
     }
-}
+
+    public static List<String> generateAllPossibleStrings(String start, String end) {
+        if (start == null || end == null) {
+            return null;
+        }
+        if (start.length() != end.length()) {
+            return null;
+        }
+        int n = start.length();
+        List<String> variants = new ArrayList<>();
+        char startArray[] = start.toCharArray();
+        char endArray[] = end.toCharArray();
+        char currentArray[] = Arrays.copyOf(startArray, startArray.length);
+        variants.add(new String(currentArray));
+
+        //We check if the start string is really above the end string as specified
+        //We output an empty string if it is not the case
+        boolean possible = true;
+        for (int i = 0; i < n; i++) {
+            possible = possible && (startArray[i] <= endArray[i]);
+        }
+        if (!possible) {
+            return variants;
+        }
+
+        while (!end.equals(new String(currentArray))) {
+            currentArray[n - 1] += 1;
+            int i = n - 1;
+            while (currentArray[i] > endArray[i]) {
+                currentArray[i] = startArray[i];
+                i--;
+                currentArray[i]++;
+            }
+            variants.add(new String(currentArray));
+        }
+
+        System.out.println(Arrays.toString(variants.toArray()));
+        return variants;
+    }
+    public String sendBurpRequest(String path,String protocol,  String replacer)
+    {
+        HashMap<String, String> headers = new HashMap<>();
+        String method = "";
+        String URI = "";
+        String host = "";
+        String fullURL = "";
+        int closeLineNo = 1000;
+        String postVal = "";
+        String txt = readfile(path);
+        String[] lines = txt.trim().split("\n");
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
+            line = line.replaceAll("AYREP", replacer);
+            if (method.isEmpty() && line.startsWith("POST ")) {
+                method = "POST";
+                URI = line.split(" ")[1];
+            }
+            if (line.startsWith("Host:")) {
+                host = line.split(" ")[1];
+                fullURL = protocol + "://" + host + URI;
+            }
+            if (line.equalsIgnoreCase("Connection: close")) {
+                closeLineNo = i;
+            }
+            if (line.contains(": ") && !line.equalsIgnoreCase("Connection: close")) {
+                String[] kv = line.split(": ");
+                headers.put(kv[0], kv[1]);
+            }
+            if (i > closeLineNo) {
+                postVal += line + "\n";
+            }
+        }
+        postVal = postVal.trim();
+//        System.out.println("Method " + method);
+//        System.out.println("Full URL " + fullURL);
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+//            System.out.println(key + " = " + value);
+        }
+//        System.out.println("postVal " + postVal);
+        
+        try {
+            String resp = sendPost(fullURL, headers, postVal);
+            return resp;
+        } catch (Exception ex) {
+            return ex.getMessage();
+        }
+    }
 }
