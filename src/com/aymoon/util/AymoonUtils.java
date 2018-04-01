@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.homains.utils.hackforme;
+package com.aymoon.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
