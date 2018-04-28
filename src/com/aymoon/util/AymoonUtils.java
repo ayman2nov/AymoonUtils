@@ -64,6 +64,21 @@ public class AymoonUtils {
         return text.toString();
     }
 
+    public String whatIsMyIP() {
+        try {
+            URL whatismyip = new URL("http://checkip.amazonaws.com");
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    whatismyip.openStream()));
+
+            String ip = in.readLine(); //you get the IP as a String
+            return ip;
+        } catch (Exception ex) {
+            Logger.getLogger(AymoonUtils.class.getName()).log(Level.SEVERE, null, ex);
+            return "NOIP";
+        }
+
+    }
+    
     public String sendRequest(String endPoint, String method, ArrayList<HashMap<String, String>> headers, String body) throws Exception {
         URL url = new URL(endPoint);
         StringBuffer text = new StringBuffer();
@@ -352,8 +367,8 @@ public class AymoonUtils {
         System.out.println(Arrays.toString(variants.toArray()));
         return variants;
     }
-    public String sendBurpRequest(String path,String protocol,  String replacer)
-    {
+
+    public String sendBurpRequest(String path, String protocol, String replacer) {
         HashMap<String, String> headers = new HashMap<>();
         String method = "";
         String URI = "";
@@ -394,7 +409,7 @@ public class AymoonUtils {
 //            System.out.println(key + " = " + value);
         }
 //        System.out.println("postVal " + postVal);
-        
+
         try {
             String resp = sendPost(fullURL, headers, postVal);
             return resp;
