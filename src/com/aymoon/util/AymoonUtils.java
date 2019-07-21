@@ -417,4 +417,25 @@ public class AymoonUtils {
             return ex.getMessage();
         }
     }
+public void downloadDirectoryListing(String url, String directory) {
+		String source = "";
+		try {
+			source = getData(url, 10000);
+			source = source.split("Parent Directory")[1];
+		} catch (Exception e) {
+		}
+
+		List<String> paths = getall(source, "<a href=\"(.*?)\">(.*?)</a>", 1);
+		for (String file : paths) {
+			try {
+				downloadFromUrl(new URL(url + "/" + file), directory + "/" + file);
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 }
